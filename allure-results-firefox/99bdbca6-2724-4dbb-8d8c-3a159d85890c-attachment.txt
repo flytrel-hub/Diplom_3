@@ -1,0 +1,3 @@
+Ввод email в firefox
+Клик по RECOVER_BUTTON в firefox
+Клик по PASSWORD_VISIBILITY_TOGGLE в firefox

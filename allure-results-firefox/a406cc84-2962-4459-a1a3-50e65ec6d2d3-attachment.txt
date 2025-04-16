@@ -1,0 +1,10 @@
+Клик по LOGIN_BUTTON в firefox
+Клик по LOGIN_BUTTON в firefox
+Ошибка при клике по LOGIN_BUTTON: Message: 
+Stacktrace:
+RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:199:5
+NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:552:5
+dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+Клик по ORDER_HISTORY_BUTTON в firefox

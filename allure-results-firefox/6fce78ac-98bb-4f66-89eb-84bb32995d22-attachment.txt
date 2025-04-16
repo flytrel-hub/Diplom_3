@@ -1,0 +1,4 @@
+Клик по LOGIN_BUTTON в firefox
+Добавление ингредиентов в firefox
+Текущий счетчик ингредиентов: 2
+Клик по ORDER_HISTORY_BUTTON в firefox
