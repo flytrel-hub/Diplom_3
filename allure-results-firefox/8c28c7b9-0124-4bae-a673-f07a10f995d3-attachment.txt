@@ -1,2 +1,0 @@
-Ввод email в firefox
-Клик по RECOVER_BUTTON в firefox

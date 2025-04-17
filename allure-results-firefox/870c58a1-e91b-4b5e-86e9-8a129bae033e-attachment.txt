@@ -1,1 +1,0 @@
-Клик по LOGIN_BUTTON в firefox

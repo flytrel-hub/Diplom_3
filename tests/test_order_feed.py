@@ -1,8 +1,5 @@
 import allure
 import time
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from locators import OrderFeedPageLocators, MainPageLocators
 
@@ -19,22 +16,18 @@ class TestOrderFeed:
             order_item.click()
 
         with allure.step("Проверка отображения модального окна с деталями заказа"):
-            modal = order_feed_page.find_element(OrderFeedPageLocators.ORDER_DETAILS_MODAL)
-            assert modal.is_displayed(), "Модальное окно с деталями заказа не отображается"
+            assert order_feed_page.is_element_visible(OrderFeedPageLocators.ORDER_DETAILS_MODAL), "Модальное окно с деталями заказа не отображается"
 
         with allure.step("Закрытие модального окна"):
             close_button = order_feed_page.find_element(OrderFeedPageLocators.MODAL_CLOSE_BUTTON)
-            order_feed_page.driver.execute_script("arguments[0].click();", close_button)
+            order_feed_page.execute_js_click(close_button)
 
         with allure.step("Проверка, что модальное окно закрылось"):
             try:
-                WebDriverWait(order_feed_page.driver, 5).until_not(
-                    EC.presence_of_element_located(OrderFeedPageLocators.VISIBLE_MODAL),
-                    message="Модальное окно не закрылось"
-                )
+                order_feed_page.wait_for_element_not_visible(OrderFeedPageLocators.VISIBLE_MODAL, timeout=5)
             except TimeoutException:
                 allure.attach(
-                    order_feed_page.driver.get_screenshot_as_png(),
+                    order_feed_page.get_screenshot_as_png(),
                     name="modal_not_closed",
                     attachment_type=allure.attachment_type.PNG
                 )
@@ -50,55 +43,36 @@ class TestOrderFeed:
             main_page.add_ingredients_to_order(count=3)
 
         with allure.step("Ожидание кликабельности кнопки 'Оформить заказ'"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.ORDER_BUTTON),
-                message="Кнопка 'Оформить заказ' не стала кликабельной"
-            )
+            main_page.wait_for_element_clickable(MainPageLocators.ORDER_BUTTON)
 
         with allure.step("Клик по кнопке 'Оформить заказ'"):
             main_page.click_order_button()
 
         with allure.step("Ожидание появления модального окна с номером заказа"):
             try:
-                WebDriverWait(main_page.driver, 15).until(
-                    EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER_MODAL),
-                    message="Модальное окно с номером заказа не появилось"
-                )
+                main_page.wait_for_element_visible(MainPageLocators.ORDER_NUMBER_MODAL, timeout=15)
                 for _ in range(3):
-                    order_number = WebDriverWait(main_page.driver, 10).until(
-                        lambda x: main_page.get_order_number(),
-                        message="Не удалось получить номер заказа"
-                    )
+                    order_number = main_page.get_order_number()
                     if order_number and order_number != "9999":
                         break
-                    WebDriverWait(main_page.driver, 5).until(
-                        lambda x: main_page.get_order_number() != order_number,
-                        message="Номер заказа не изменился"
-                    )
+                    main_page.wait_for_order_number_change(order_number)
 
                 assert order_number and order_number != "9999", "Не удалось получить валидный номер заказа"
 
             except TimeoutException:
                 allure.attach(
-                    main_page.driver.get_screenshot_as_png(),
+                    main_page.get_screenshot_as_png(),
                     name="order_modal_not_visible",
                     attachment_type=allure.attachment_type.PNG
                 )
                 raise
 
         with allure.step("Получение номера заказа"):
-            order_number = WebDriverWait(main_page.driver, 10).until(
-                lambda x: main_page.get_order_number(),
-                message="Не удалось получить номер заказа"
-            )
+            order_number = main_page.get_order_number()
 
         with allure.step("Закрытие модального окна"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON),
-                message="Кнопка закрытия модального окна не стала кликабельной"
-            )
-            main_page.driver.execute_script("arguments[0].click();", 
-                main_page.driver.find_element(*MainPageLocators.MODAL_CLOSE_BUTTON))
+            close_button = main_page.wait_for_element_clickable(MainPageLocators.MODAL_CLOSE_BUTTON)
+            main_page.execute_js_click(close_button)
 
         with allure.step("Переход в личный кабинет"):
             main_page.click_personal_account_button()
@@ -107,13 +81,10 @@ class TestOrderFeed:
             personal_account_page.click_order_history_button()
 
         with allure.step("Ожидание отображения заказа в истории"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.visibility_of_element_located(OrderFeedPageLocators.ORDER_ITEM),
-                message="Заказы не отобразились в истории"
-            )
+            main_page.wait_for_element_visible(OrderFeedPageLocators.ORDER_ITEM)
 
         with allure.step("Проверка наличия заказа в истории"):
-            orders = main_page.driver.find_elements(By.XPATH, "//p[@class='text text_type_digits-default']")
+            orders = main_page.find_elements(OrderFeedPageLocators.ORDER_NUMBER_TEXT)
             order_numbers = [order.text for order in orders]
             formatted_order_number = f"#0{order_number}"
             assert formatted_order_number in order_numbers, f"Заказ {formatted_order_number} не найден в истории заказов"
@@ -140,61 +111,42 @@ class TestOrderFeed:
             main_page.add_ingredients_to_order(count=3)
 
         with allure.step("Ожидание кликабельности кнопки 'Оформить заказ'"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.ORDER_BUTTON),
-                message="Кнопка 'Оформить заказ' не стала кликабельной"
-            )
+            main_page.wait_for_element_clickable(MainPageLocators.ORDER_BUTTON)
 
         with allure.step("Клик по кнопке 'Оформить заказ'"):
             main_page.click_order_button()
 
         with allure.step("Ожидание появления модального окна с номером заказа"):
             try:
-                WebDriverWait(main_page.driver, 15).until(
-                    EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER_MODAL),
-                    message="Модальное окно с номером заказа не появилось"
-                )
+                main_page.wait_for_element_visible(MainPageLocators.ORDER_NUMBER_MODAL, timeout=15)
                 for _ in range(3):
-                    order_number = WebDriverWait(main_page.driver, 10).until(
-                        lambda x: main_page.get_order_number(),
-                        message="Не удалось получить номер заказа"
-                    )
+                    order_number = main_page.get_order_number()
                     if order_number and order_number != "9999":
                         break
-                    WebDriverWait(main_page.driver, 5).until(
-                        lambda x: main_page.get_order_number() != order_number,
-                        message="Номер заказа не изменился"
-                    )
+                    main_page.wait_for_order_number_change(order_number)
 
                 assert order_number and order_number != "9999", "Не удалось получить валидный номер заказа"
             except TimeoutException:
                 allure.attach(
-                    main_page.driver.get_screenshot_as_png(),
+                    main_page.get_screenshot_as_png(),
                     name="order_modal_not_visible",
                     attachment_type=allure.attachment_type.PNG
                 )
                 raise
 
         with allure.step("Закрытие модального окна"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON),
-                message="Кнопка закрытия модального окна не стала кликабельной"
-            )
-            main_page.driver.execute_script("arguments[0].click();", 
-                main_page.driver.find_element(*MainPageLocators.MODAL_CLOSE_BUTTON))
+            close_button = main_page.wait_for_element_clickable(MainPageLocators.MODAL_CLOSE_BUTTON)
+            main_page.execute_js_click(close_button)
 
         with allure.step("Возврат в ленту заказов"):
             main_page.click_order_feed_button()
 
         with allure.step("Ожидание обновления счетчика"):
-            def counter_updated(driver):
+            def counter_updated():
                 new_count = int(order_feed_page.get_total_orders_count())
                 return new_count > initial_count
 
-            WebDriverWait(main_page.driver, 10).until(
-                counter_updated,
-                message="Счетчик 'Выполнено за все время' не обновился"
-            )
+            main_page.wait_for_counter_update(counter_updated)
 
         with allure.step("Проверка увеличения счетчика"):
             new_count = int(order_feed_page.get_total_orders_count())
@@ -216,66 +168,47 @@ class TestOrderFeed:
             main_page.add_ingredients_to_order(count=3)
 
         with allure.step("Ожидание кликабельности кнопки 'Оформить заказ'"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.ORDER_BUTTON),
-                message="Кнопка 'Оформить заказ' не стала кликабельной"
-            )
+            main_page.wait_for_element_clickable(MainPageLocators.ORDER_BUTTON)
 
         with allure.step("Клик по кнопке 'Оформить заказ'"):
             main_page.click_order_button()
 
         with allure.step("Ожидание появления модального окна с номером заказа"):
             try:
-                WebDriverWait(main_page.driver, 15).until(
-                    EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER_MODAL),
-                    message="Модальное окно с номером заказа не появилось"
-                )
+                main_page.wait_for_element_visible(MainPageLocators.ORDER_NUMBER_MODAL, timeout=15)
                 for _ in range(3):
-                    order_number = WebDriverWait(main_page.driver, 10).until(
-                        lambda x: main_page.get_order_number(),
-                        message="Не удалось получить номер заказа"
-                    )
+                    order_number = main_page.get_order_number()
                     if order_number and order_number != "9999":
                         break
-                    WebDriverWait(main_page.driver, 5).until(
-                        lambda x: main_page.get_order_number() != order_number,
-                        message="Номер заказа не изменился"
-                    )
+                    main_page.wait_for_order_number_change(order_number)
 
                 assert order_number and order_number != "9999", "Не удалось получить валидный номер заказа"
             except TimeoutException:
                 allure.attach(
-                    main_page.driver.get_screenshot_as_png(),
+                    main_page.get_screenshot_as_png(),
                     name="order_modal_not_visible",
                     attachment_type=allure.attachment_type.PNG
                 )
                 raise
 
         with allure.step("Закрытие модального окна"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON),
-                message="Кнопка закрытия модального окна не стала кликабельной"
-            )
-            main_page.driver.execute_script("arguments[0].click();", 
-                main_page.driver.find_element(*MainPageLocators.MODAL_CLOSE_BUTTON))
+            close_button = main_page.wait_for_element_clickable(MainPageLocators.MODAL_CLOSE_BUTTON)
+            main_page.execute_js_click(close_button)
 
         with allure.step("Возврат в ленту заказов"):
             main_page.click_order_feed_button()
 
         with allure.step("Ожидание обновления счетчика"):
-            def counter_updated(driver):
+            def counter_updated():
                 new_count = int(order_feed_page.get_today_orders_count())
                 time.sleep(2)
                 return new_count > initial_count
 
             try:
-                WebDriverWait(main_page.driver, 20).until(
-                    counter_updated,
-                    message="Счетчик 'Выполнено за сегодня' не обновился"
-                )
+                main_page.wait_for_counter_update(counter_updated, timeout=20)
             except TimeoutException:
                 allure.attach(
-                    main_page.driver.get_screenshot_as_png(),
+                    main_page.get_screenshot_as_png(),
                     name="counter_not_updated",
                     attachment_type=allure.attachment_type.PNG
                 )
@@ -295,23 +228,17 @@ class TestOrderFeed:
             main_page.add_ingredients_to_order(count=3)
 
         with allure.step("Ожидание кликабельности кнопки 'Оформить заказ'"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.ORDER_BUTTON),
-                message="Кнопка 'Оформить заказ' не стала кликабельной"
-            )
+            main_page.wait_for_element_clickable(MainPageLocators.ORDER_BUTTON)
 
         with allure.step("Клик по кнопке 'Оформить заказ'"):
             main_page.click_order_button()
 
         with allure.step("Ожидание появления модального окна с номером заказа"):
             try:
-                WebDriverWait(main_page.driver, 15).until(
-                    EC.visibility_of_element_located(MainPageLocators.ORDER_NUMBER_MODAL),
-                    message="Модальное окно с номером заказа не появилось"
-                )
+                main_page.wait_for_element_visible(MainPageLocators.ORDER_NUMBER_MODAL, timeout=15)
             except TimeoutException:
                 allure.attach(
-                    main_page.driver.get_screenshot_as_png(),
+                    main_page.get_screenshot_as_png(),
                     name="order_modal_not_visible",
                     attachment_type=allure.attachment_type.PNG
                 )
@@ -323,38 +250,28 @@ class TestOrderFeed:
         with allure.step("Получение номера заказа"):
             order_number = None
             for _ in range(3):
-                order_number = WebDriverWait(main_page.driver, 10).until(
-                    lambda x: main_page.get_order_number(),
-                    message="Не удалось получить номер заказа"
-                )
+                order_number = main_page.get_order_number()
                 if order_number and order_number != "9999":
                     break
-                WebDriverWait(main_page.driver, 5).until(
-                    lambda x: main_page.get_order_number() != order_number,
-                    message="Номер заказа не изменился"
-                )
+                main_page.wait_for_order_number_change(order_number)
 
             assert order_number and order_number != "9999", "Не удалось получить валидный номер заказа"
 
         with allure.step("Закрытие модального окна"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON),
-                message="Кнопка закрытия модального окна не стала кликабельной"
-            )
-            main_page.driver.execute_script("arguments[0].click();", 
-                main_page.driver.find_element(*MainPageLocators.MODAL_CLOSE_BUTTON))
+            close_button = main_page.wait_for_element_clickable(MainPageLocators.MODAL_CLOSE_BUTTON)
+            main_page.execute_js_click(close_button)
 
         with allure.step("Переход в ленту заказов"):
-            main_page.driver.get("https://stellarburgers.nomoreparties.site/feed")
+            order_feed_page.open()
 
         with allure.step("Ожидание, что список текущих заказов не пуст"):
-            WebDriverWait(main_page.driver, 15).until_not(
-                EC.visibility_of_element_located((By.XPATH, "//p[text()='Все текущие заказы готовы!']")),
-                message="Список текущих заказов остался пустым"
+            main_page.wait_for_element_not_present(
+                OrderFeedPageLocators.ALL_ORDERS_READY_MESSAGE,
+                timeout=15
             )
 
         with allure.step("Обновление страницы"):
-            main_page.driver.refresh()
+            main_page.refresh_page()
 
         with allure.step("Проверка наличия заказа в разделе 'В работе'"):
             max_attempts = 15
@@ -364,10 +281,7 @@ class TestOrderFeed:
 
             while attempt < max_attempts and not found:
                 try:
-                    WebDriverWait(main_page.driver, 10).until(
-                        EC.visibility_of_element_located(OrderFeedPageLocators.IN_PROGRESS_ORDERS),
-                        message="Секция 'В работе' не отобразилась"
-                    )
+                    main_page.wait_for_element_present(OrderFeedPageLocators.IN_PROGRESS_ORDERS)
 
                     in_progress_orders = order_feed_page.find_elements(OrderFeedPageLocators.IN_PROGRESS_ORDERS)
                     order_numbers = [order.text.lstrip('0') for order in in_progress_orders]
@@ -382,12 +296,12 @@ class TestOrderFeed:
                 except Exception as e:
                     allure.step(f"Ошибка на попытке {attempt + 1}: {str(e)}")
 
-                WebDriverWait(main_page.driver, 2).until(lambda x: True)
+                time.sleep(2)
                 attempt += 1
 
             if not found:
                 allure.attach(
-                    main_page.driver.get_screenshot_as_png(),
+                    main_page.get_screenshot_as_png(),
                     name="order_not_in_progress",
                     attachment_type=allure.attachment_type.PNG
                 )

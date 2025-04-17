@@ -21,7 +21,7 @@
 2. **Создайте виртуальное окружение**:
    ```bash
    python -m venv venv
-   source venv/bin/activate
+   source venv/Scripts/activate
    ```
 
 3. **Установите зависимости**:

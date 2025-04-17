@@ -1,7 +1,5 @@
 import allure
 from locators import ForgotPasswordPageLocators
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 
 
@@ -19,7 +17,7 @@ class TestPasswordRecovery:
             login_page.click_forgot_password_link()
 
         with allure.step("Проверка URL страницы восстановления пароля"):
-            assert "forgot-password" in main_page.driver.current_url, "URL не содержит 'forgot-password'"
+            assert "forgot-password" in main_page.get_current_url(), "URL не содержит 'forgot-password'"
 
     @allure.title("Проверка процесса восстановления пароля")
     @allure.description("Тест проверяет ввод email и переход на страницу сброса пароля после клика по кнопке 'Восстановить'.")
@@ -40,12 +38,10 @@ class TestPasswordRecovery:
             forgot_password_page.click_reset_button()
 
         with allure.step("Ожидание кликабельности кнопки 'Сохранить'"):
-            WebDriverWait(main_page.driver, 10).until(
-                EC.element_to_be_clickable(ForgotPasswordPageLocators.SAVE_BUTTON)
-            )
+            forgot_password_page.wait_for_element_clickable(ForgotPasswordPageLocators.SAVE_BUTTON)
 
         with allure.step("Проверка URL страницы сброса пароля"):
-            assert "reset-password" in main_page.driver.current_url, "URL не содержит 'reset-password'"
+            assert "reset-password" in main_page.get_current_url(), "URL не содержит 'reset-password'"
 
     @allure.title("Проверка видимости поля пароля")
     @allure.description("Тест проверяет, что при клике на кнопку показа пароля поле становится видимым (тип поля меняется на 'text').")
@@ -67,9 +63,7 @@ class TestPasswordRecovery:
 
         with allure.step("Ожидание кликабельности кнопки 'Показать пароль'"):
             try:
-                WebDriverWait(main_page.driver, 10).until(
-                    EC.element_to_be_clickable(ForgotPasswordPageLocators.SHOW_PASSWORD_BUTTON)
-                )
+                forgot_password_page.wait_for_element_clickable(ForgotPasswordPageLocators.SHOW_PASSWORD_BUTTON)
                 with allure.step("Клик по кнопке 'Показать пароль'"):
                     forgot_password_page.click_show_password_button()
 

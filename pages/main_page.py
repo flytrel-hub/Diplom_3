@@ -4,7 +4,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-
 from selenium.webdriver.common.action_chains import ActionChains
 
 
@@ -189,3 +188,10 @@ class MainPage(BasePage):
             print(f"Текущий счетчик ингредиентов: {counter}")
         except TimeoutException as e:
             print(f"Ошибка в add_ingredients_to_order: {e}")
+
+    def wait_for_order_number_change(self, current_order_number, timeout=5):
+        """Ожидает изменения номера заказа"""
+        return WebDriverWait(self.driver, timeout).until(
+            lambda x: self.get_order_number() != current_order_number,
+            message="Номер заказа не изменился"
+        )

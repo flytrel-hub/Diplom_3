@@ -1,7 +1,5 @@
 import allure
 from locators import PersonalAccountPageLocators, LoginPageLocators
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 
 
 class TestPersonalAccount:
@@ -21,9 +19,7 @@ class TestPersonalAccount:
             personal_account_page.click_order_history_button()
 
         with allure.step("Ожидание URL страницы истории заказов"):
-            WebDriverWait(main_page.driver, 10).until(
-                lambda x: "account/order-history" in x.current_url
-            )
+            main_page.wait_for_url_contains("account/order-history")
 
         with allure.step("Проверка отображения кнопки истории заказов"):
             assert personal_account_page.is_element_visible(PersonalAccountPageLocators.ORDER_HISTORY_BUTTON), "Не отображается кнопка истории заказов"
@@ -37,9 +33,7 @@ class TestPersonalAccount:
             personal_account_page.click_logout_button()
 
         with allure.step("Ожидание URL страницы входа"):
-            WebDriverWait(main_page.driver, 10).until(
-                lambda x: "/login" in x.current_url
-            )
+            main_page.wait_for_url_contains("/login")
 
         with allure.step("Проверка отображения формы входа после выхода"):
             assert login_page.is_element_visible(LoginPageLocators.EMAIL_INPUT), "Не отображается форма входа после выхода"

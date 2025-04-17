@@ -115,3 +115,59 @@ class BasePage:
                 element = self.driver.find_element(*locator)
                 self.driver.execute_script("arguments[0].click();", element)
                 allure.step("Клик выполнен через JS")
+
+    def wait_for_element_clickable(self, locator, timeout=10):
+        return WebDriverWait(self.driver, timeout).until(
+            EC.element_to_be_clickable(locator)
+        )
+
+    def wait_for_element_visible(self, locator, timeout=10):
+        return WebDriverWait(self.driver, timeout).until(
+            EC.visibility_of_element_located(locator)
+        )
+
+    def wait_for_element_not_visible(self, locator, timeout=10):
+        return WebDriverWait(self.driver, timeout).until_not(
+            EC.visibility_of_element_located(locator)
+        )
+
+    def wait_for_url_contains(self, url_part, timeout=10):
+        return WebDriverWait(self.driver, timeout).until(
+            lambda x: url_part in x.current_url
+        )
+
+    def execute_js_click(self, element):
+        self.driver.execute_script("arguments[0].click();", element)
+
+    def get_current_url(self):
+        return self.driver.current_url
+
+    def wait_for_counter_update(self, check_function, timeout=10):
+        return WebDriverWait(self.driver, timeout).until(
+            lambda x: check_function(),
+            message="Счетчик не обновился"
+        )
+
+    def get_screenshot_as_png(self):
+        return self.driver.get_screenshot_as_png()
+
+    def refresh_page(self):
+        self.driver.refresh()
+
+    def wait_for_element_not_present(self, locator, timeout=10):
+        return WebDriverWait(self.driver, timeout).until_not(
+            EC.visibility_of_element_located(locator),
+            message="Элемент все еще присутствует на странице"
+        )
+
+    def wait_for_element_present(self, locator, timeout=10):
+        return WebDriverWait(self.driver, timeout).until(
+            EC.visibility_of_element_located(locator),
+            message="Элемент не появился на странице"
+        )
+
+    def wait_for_order_number_change(self, current_order_number, timeout=5):
+        return WebDriverWait(self.driver, timeout).until(
+            lambda x: self.get_order_number() != current_order_number,
+            message="Номер заказа не изменился"
+        )

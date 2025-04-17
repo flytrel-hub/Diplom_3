@@ -1,4 +1,3 @@
-import pytest
 import allure
 from locators import MainPageLocators, OrderFeedPageLocators
 
