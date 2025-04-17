@@ -1,0 +1,27 @@
+Клик по LOGIN_BUTTON в chrome
+Клик по LOGIN_BUTTON в chrome
+Ошибка при клике по LOGIN_BUTTON: Message: Can't click element by locator ('xpath', "//button[text()='Войти']")
+Stacktrace:
+	GetHandleVerifier [0x006B80E3+60707]
+	GetHandleVerifier [0x006B8124+60772]
+	(No symbol) [0x004E0683]
+	(No symbol) [0x00528660]
+	(No symbol) [0x005289FB]
+	(No symbol) [0x00571022]
+	(No symbol) [0x0054D094]
+	(No symbol) [0x0056E824]
+	(No symbol) [0x0054CE46]
+	(No symbol) [0x0051C5D3]
+	(No symbol) [0x0051D424]
+	GetHandleVerifier [0x008FBBC3+2435075]
+	GetHandleVerifier [0x008F7163+2416035]
+	GetHandleVerifier [0x0091350C+2531660]
+	GetHandleVerifier [0x006CF1B5+155125]
+	GetHandleVerifier [0x006D5B5D+182173]
+	GetHandleVerifier [0x006BF9B8+91640]
+	GetHandleVerifier [0x006BFB60+92064]
+	GetHandleVerifier [0x006AA620+4704]
+	BaseThreadInitThunk [0x76CF5D49+25]
+	RtlInitializeExceptionChain [0x77DBCF0B+107]
+	RtlGetAppContainerNamedObjectPath [0x77DBCE91+561]
+

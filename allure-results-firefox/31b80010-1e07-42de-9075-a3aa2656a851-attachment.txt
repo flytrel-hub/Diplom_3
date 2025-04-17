@@ -1,0 +1,4 @@
+Клик по LOGIN_BUTTON в chrome
+Добавление ингредиентов в chrome
+Текущий счетчик ингредиентов: 2
+Клик по ORDER_HISTORY_BUTTON в chrome

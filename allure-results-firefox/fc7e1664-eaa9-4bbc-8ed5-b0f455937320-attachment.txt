@@ -1,0 +1,2 @@
+Ввод email в chrome
+Клик по RECOVER_BUTTON в chrome
